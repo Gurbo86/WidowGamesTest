@@ -1,14 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class RESTHandler : MonoBehaviour
 {
     private static RESTHandler _instance;
-    //private static string user = "leonel.maguet@gmail.com";
-    //private static string pass = "Njimko@86";
-    private static string apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI5OGE5ZmUzMC0yMWRmLTAxMzgtMzg2ZS03NTczNzdiNTc2MzMiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNTc5OTg0MjkxLCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6Imxlb25lbC1tYWd1ZXQtIn0.jx9OZgLYB2etNWMEL0liK2EtRU_WRynoQBg15ha98N8";
 
     public static RESTHandler Instance
     {
@@ -30,7 +27,7 @@ public class RESTHandler : MonoBehaviour
         }
     }
 
-    public IEnumerator Get(string url)
+    public IEnumerator Get(string url, string apiKey, Action<string> response)
     {
         using (UnityWebRequest www = UnityWebRequest.Get("https://api.pubg.com/tournaments"))
         {
@@ -47,8 +44,8 @@ public class RESTHandler : MonoBehaviour
             {
                 if (www.isDone)
                 {
-                    string result = System.Text.Encoding.UTF8.GetString(www.downloadHandler.data);
-                    Debug.Log("We have a result. Is :" + result);
+                    string result = www.downloadHandler.text;
+                    response.Invoke(result);
                 }
             }
         }
