@@ -26,7 +26,8 @@ public class TournamentList
 public class TournamentsPanelController : MonoBehaviour
 {
     public string path = "tournaments";
-    public Text text;
+    public GameObject rowGO;
+    public RectTransform content;
 
     private ClientHandler clientHandler;
     private StringBuilder stringBuilder = new StringBuilder();
@@ -36,15 +37,18 @@ public class TournamentsPanelController : MonoBehaviour
         TournamentList dataList = new TournamentList();
         JsonUtility.FromJsonOverwrite(JsonResponse, dataList);
 
-        stringBuilder.AppendLine("Tournament Id:\t\t\tTournament Date:");
+        GameObject GO;
+        TournamentRow tr;
+
         foreach (DataTournaments data in dataList.data)
         {
-            stringBuilder.Append(data.id);
-            stringBuilder.Append("\t\t\t");
-            stringBuilder.AppendLine(data.attributes.createdAt);
+            GO = Instantiate(rowGO, Vector3.zero, Quaternion.identity, content);
+            tr = GO.GetComponent<TournamentRow>();
+            tr.id.text = data.id;
+            tr.date.text = data.attributes.createdAt;
+            GO.SetActive(true);
         }
 
-        text.text = stringBuilder.ToString();
     }
 
     public void GetListOfTournaments()
