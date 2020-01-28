@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Text;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 [Serializable]
 public class DataTournaments : Data
@@ -30,29 +27,65 @@ public class TournamentsPanelController : MonoBehaviour
     public RectTransform content;
 
     private ClientHandler clientHandler;
-    private StringBuilder stringBuilder = new StringBuilder();
+    private List<TournamentRow> rowPool;
 
     private void ServerResponseOk(string JsonResponse)
     {
         TournamentList dataList = new TournamentList();
         JsonUtility.FromJsonOverwrite(JsonResponse, dataList);
 
-        GameObject GO;
         TournamentRow tr;
 
         foreach (DataTournaments data in dataList.data)
         {
-            GO = Instantiate(rowGO, Vector3.zero, Quaternion.identity, content);
-            tr = GO.GetComponent<TournamentRow>();
-            tr.id.text = data.id;
-            tr.date.text = data.attributes.createdAt;
-            GO.SetActive(true);
+            tr = GetRow();
+            tr.Id = data.id;
+            tr.Date = data.attributes.createdAt;
+            tr.transform.SetParent(content, false);
+            tr.gameObject.SetActive(true);
         }
 
     }
 
+    private TournamentRow GetRow()
+    {
+        TournamentRow row = rowPool
+            .Find(
+                x => x.gameObject.activeSelf == false
+            );
+
+        if (row == null)
+        {
+            row = Instantiate(
+                rowGO
+                , Vector3.zero
+                , Quaternion.identity
+            )
+            .GetComponent<TournamentRow>();
+
+            rowPool.Add(row);
+        }
+
+        return row;
+    }
+
+    private void clearAllRows()
+    {
+        foreach (TournamentRow row in rowPool)
+        {
+            row.gameObject.SetActive(false);
+            row.transform.SetParent(transform);
+            row.Clear();
+        }
+    }
+
     public void GetListOfTournaments()
     {
+        if (rowPool.Count != 0)
+        {
+            clearAllRows();
+        }
+
         StartCoroutine(
             RESTHandler
             .Instance
@@ -63,8 +96,15 @@ public class TournamentsPanelController : MonoBehaviour
         );
     }
 
+    public void CloseApp()
+    {
+        StopAllCoroutines();
+        Application.Quit();
+    }
+
     void Start()
     {
         clientHandler = FindObjectOfType<ClientHandler>();
+        rowPool = new List<TournamentRow>();
     }
 }
